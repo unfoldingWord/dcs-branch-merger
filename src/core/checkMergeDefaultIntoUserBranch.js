@@ -2,9 +2,9 @@ import { checkFilenameUpdateable } from './common'
 import { getPrJsonWithNonCheckingStatus } from './pullRequestMergeableHack'
 
 export async function checkMergeDefaultIntoUserBranch({
-  server, owner, repo, userBranch, prDescription, tokenid, filename,
+  server, owner, repo, userBranch, prDescription, tokenid, filename, userId
 }) {
-  console.log(server, owner, repo, userBranch, tokenid)
+  // console.log(server, owner, repo, userBranch, userId)
   let returnObject = {
     mergeNeeded: false,
     conflict: false, 
@@ -14,7 +14,7 @@ export async function checkMergeDefaultIntoUserBranch({
   };
   let prJson = {}
   try {
-    prJson = await getPrJsonWithNonCheckingStatus ( {server, owner, repo, userBranch, prBody: prDescription, tokenid} )
+    prJson = await getPrJsonWithNonCheckingStatus ( {server, owner, repo, userBranch, prBody: prDescription, tokenid, userId} )
   } catch (e) {
     returnObject.error = true
     returnObject.message = e.message

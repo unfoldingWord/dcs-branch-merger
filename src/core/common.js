@@ -6,13 +6,17 @@ import { apiPath } from './constants'
 export async function getPrJson({
   server, owner, repo, prId,
 }) {
-  console.log("getPrJson()",server, owner, repo, prId)
+  // console.log("getPrJson()",server, owner, repo, prId)
   const uri = server + '/' + Path.join(apiPath, 'repos', owner, repo, 'pulls', prId)
   let res = {}
   try {
     res = await fetch(uri);
   } catch (e) {
+    console.error("getPrJson() fetch failed", server, owner, repo, prId, e)
     return null
+  }
+  if (!res.ok) {
+    console.error(`getPrJson() http error: ${res.status}`, server, owner, repo, prId)
   }
   return res.json()
 }
@@ -21,19 +25,21 @@ export async function getPrJson({
 export async function getUserJson({
   server, tokenid
 }) {
-  console.log("getUserJson()",server, tokenid)
+  // console.log("getUserJson()",server, tokenid)
   const uri = server + '/' + Path.join(apiPath, 'user')
   let res = await fetch(uri, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenid}` },
   })
-  console.log("getUserJson res.Status: ", res.status)
+  // console.log("getUserJson res.Status: ", res.status)
   switch (res.status) {
     case 401:
+      console.error(`getUserJson() http error: res.status=${res.status}`, server, tokenid)
       throw Error("invalid token")
     case 200:
       return await res.json()
     default:
+      console.error(`getUserJson() http error: res.status=${res.status}`, server, tokenid)
       throw Error("unknown error")
   }
 }
@@ -48,13 +54,16 @@ export async function getUsername({
 
 // example: POST https://qa.door43.org/api/v1/repos/unfoldingword/en_ult/pulls
 export async function getPrJsonByUserBranch({
-  server, owner, repo, userBranch, prBody, tokenid
+  server, owner, repo, userBranch, prBody, tokenid, userId
 }) {
   // We get a PR by UserBranch by first creating an open PR for the user branch into master.
   // Since only one open PR can exist, the request will return a 409 if it does with information 
   // we can use to get the existing PR, otherwise use the newly created PR.
-  const username = await getUsername({ server, tokenid })
-  console.log("username from getUsername() is:", username)
+  let username = userId
+  if (!username) {
+    username = await getUsername({ server, tokenid })
+  }
+  // console.log("username from getUsername() is:", username)
   const defaultBranch = await getRepoDefaultBranch({ server, owner, repo })
   const uri = server + '/' + Path.join(apiPath, 'repos', owner, repo, 'pulls')
   let _prBody = ""
@@ -88,13 +97,16 @@ export async function getPrJsonByUserBranch({
       // head_branch: gt-RUT-cecil.new, 
       // base_branch: master]"
       pr_num = msg.split("issue_id: ")[1].split(",")[0]
-      console.log("pr_num:", pr_num)
+      // console.log("pr_num:", pr_num)
       return await getPrJson({ server, owner, repo, prId: pr_num })
     case 404:
+      // in our case this is not an error, just a quick feedback that branch is not present
+      // console.error(`getPrJsonByUserBranch() http error: res.status=${res.status}`, server, owner, repo, userBranch)
       throw Error(`branch ${userBranch} does not exist`)
     case 201:
       return await res.json()
     default:
+      console.error(`getPrJsonByUserBranch() http error: res.status=${res.status}`, server, owner, repo, userBranch)
       throw Error("unknown error")
   }
 }
@@ -108,14 +120,17 @@ export async function getRepoJson({
   try {
     res = await fetch(uri);
   } catch (e) {
+    console.error(`getRepoJson() fetch failed`, uri, e)
     return Error(`error fetching ${uri}`)
   }
   switch (res.status) {
     case 404:
+      console.error(`getRepoJson() http error: res.status=${res.status}`, server, owner, repo)
       throw Error(`repository ${owner}/${repo} doesn't exist`)
     case 200:
       return await res.json();
     default:
+      console.error(`getRepoJson() http error: res.status=${res.status}`, server, owner, repo)
       throw Error('unknown error')
   }
 }
