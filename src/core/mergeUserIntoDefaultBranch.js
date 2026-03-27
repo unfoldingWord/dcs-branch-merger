@@ -1,9 +1,9 @@
 import { getPrJsonByUserBranch, mergePullRequest } from './common'
 
 export async function mergeUserIntoDefaultBranch({
-  server, owner, repo, userBranch, prDescription, tokenid
+  server, owner, repo, userBranch, prDescription, tokenid, userId
 }) {
-  console.log(server, owner, repo, userBranch, tokenid)
+  // console.log(server, owner, repo, userBranch, userId)
   let returnObject = {
     mergeNeeded: false,
     conflict: false,
@@ -15,7 +15,7 @@ export async function mergeUserIntoDefaultBranch({
   };
   let prJson = {}
   try {
-    prJson = await getPrJsonByUserBranch({ server, owner, repo, userBranch, prBody: prDescription, tokenid })
+    prJson = await getPrJsonByUserBranch({ server, owner, repo, userBranch, prBody: prDescription, tokenid, userId })
   } catch (e) {
     returnObject.error = true
     returnObject.message = e.message
@@ -41,7 +41,7 @@ export async function mergeUserIntoDefaultBranch({
 
   try {
     // Since the PR is for user branch into default branch, we simply update the PR
-    const res = await mergePullRequest({ server, owner, repo, userBranch, prNum: prJson.number, prBody: prDescription, tokenid })
+    const res = await mergePullRequest({ server, owner, repo, userBranch, prNum: prJson.number, prBody: prDescription, tokenid, userId })
     switch (res.status) {
       case 200:
         returnObject.mergeNeeded = false
