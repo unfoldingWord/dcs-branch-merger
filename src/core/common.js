@@ -52,6 +52,31 @@ export async function getUsername({
   return userJson.login
 }
 
+// example: GET https://qa.door43.org/api/v1/repos/unfoldingWord/en_tn/pulls/master/user-tc-create-1
+export async function getPrJsonByUserBranch2({
+                                    server, owner, repo, userBranch, prBody, tokenid, userId
+                                  }) {
+  const uri = server + '/' + Path.join(apiPath, 'repos', owner, repo, 'pulls', 'master', userBranch)
+  let res = {}
+  try {
+    res = await fetch(uri);
+  } catch (e) {
+    console.error(`getPrJsonByUserBranch2() fetch failed`, uri, e)
+    return Error(`error fetching ${uri}`)
+  }
+  //TODO: add parsing of response
+  switch (res.status) {
+    case 404:
+      console.error(`getPrJsonByUserBranch2() http error: res.status=${res.status}`, server, owner, repo)
+      throw Error(`repository ${owner}/${repo} doesn't exist`)
+    case 200:
+      return await res.json();
+    default:
+      console.error(`getPrJsonByUserBranch2() http error: res.status=${res.status}`, server, owner, repo)
+      throw Error('unknown error')
+  }
+}
+
 // example: POST https://qa.door43.org/api/v1/repos/unfoldingword/en_ult/pulls
 export async function getPrJsonByUserBranch({
   server, owner, repo, userBranch, prBody, tokenid, userId

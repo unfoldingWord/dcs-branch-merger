@@ -1,7 +1,7 @@
 {
   "name": "dcs-branch-merger",
   "description": "A package for merging branches through the DCS API.",
-  "version": "1.4.2",
+  "version": "1.4.3-beta",
   "private": false,
   "homepage": "https://unfoldingword.github.io/dcs-branch-merger/",
   "repository": {
